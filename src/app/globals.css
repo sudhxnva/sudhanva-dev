@@ -1,0 +1,258 @@
+@import "tailwindcss";
+
+/* ─── CSS Custom Properties ─────────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-primary: #050a05;
+  --bg-secondary: #0d1117;
+  --bg-tertiary: #111827;
+
+  /* Pokemon Emerald Greens */
+  --green-primary: #00a651;
+  --green-bright: #39ff14;
+  --green-muted: #1a4d2e;
+  --green-dim: #0f2918;
+
+  /* Apple Neutrals */
+  --white: #f5f5f7;
+  --gray-100: #e5e5ea;
+  --gray-400: #8e8e93;
+  --gray-700: #3a3a3c;
+
+  /* Accent */
+  --amber: #ffb800;
+
+  /* Fonts */
+  --font-pixel: var(--font-press-start-2p, "Press Start 2P"), monospace;
+  --font-mono: var(--font-jetbrains-mono, "JetBrains Mono"), monospace;
+  --font-sans: var(--font-inter, "Inter"), system-ui, sans-serif;
+
+  /* Pixel border */
+  --pixel-border: 0 -4px 0 0 var(--green-primary),
+    0 4px 0 0 var(--green-primary), -4px 0 0 0 var(--green-primary),
+    4px 0 0 0 var(--green-primary), -4px -4px 0 0 var(--bg-primary),
+    4px -4px 0 0 var(--bg-primary), -4px 4px 0 0 var(--bg-primary),
+    4px 4px 0 0 var(--bg-primary);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0f0f5;
+  --white: #1d1d1f;
+  --gray-100: #3a3a3c;
+  --gray-400: #6c6c70;
+  --gray-700: #c7c7cc;
+  --pixel-border: 0 -4px 0 0 var(--green-primary),
+    0 4px 0 0 var(--green-primary), -4px 0 0 0 var(--green-primary),
+    4px 0 0 0 var(--green-primary), -4px -4px 0 0 var(--bg-primary),
+    4px -4px 0 0 var(--bg-primary), -4px 4px 0 0 var(--bg-primary),
+    4px 4px 0 0 var(--bg-primary);
+}
+
+/* ─── Base Styles ────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-muted) var(--bg-secondary);
+}
+
+html::-webkit-scrollbar {
+  width: 6px;
+}
+html::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+html::-webkit-scrollbar-thumb {
+  background: var(--green-muted);
+  border-radius: 0;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--green-primary);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--white);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ─── Cursor Blink ───────────────────────────────────────────────────────── */
+@keyframes cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+/* ─── CRT Scanlines ──────────────────────────────────────────────────────── */
+@keyframes scanline-drift {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(4px);
+  }
+}
+
+.crt-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.12) 2px,
+    rgba(0, 0, 0, 0.12) 4px
+  );
+}
+
+.crt-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+/* ─── Hero Grid Background ───────────────────────────────────────────────── */
+@keyframes grid-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 40px;
+  }
+}
+
+.hero-grid {
+  background-image: linear-gradient(
+      rgba(0, 166, 81, 0.05) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(0, 166, 81, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: grid-drift 20s linear infinite;
+}
+
+/* ─── Pixel Border Utility ───────────────────────────────────────────────── */
+.pixel-border {
+  box-shadow: var(--pixel-border);
+  transform: translateZ(0);
+}
+
+/* ─── Terminal Text Green ────────────────────────────────────────────────── */
+.text-terminal {
+  color: var(--green-bright);
+}
+
+.text-accent {
+  color: var(--green-primary);
+}
+
+/* ─── Glass Card ─────────────────────────────────────────────────────────── */
+.glass-card {
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Pixel Sprite Performance ───────────────────────────────────────────── */
+.pixel-sprite {
+  will-change: transform;
+  image-rendering: pixelated;
+}
+
+/* ─── Loading Screen Flash ───────────────────────────────────────────────── */
+@keyframes green-flash {
+  0% {
+    background: var(--bg-primary);
+  }
+  50% {
+    background: rgba(0, 166, 81, 0.15);
+  }
+  100% {
+    background: var(--bg-primary);
+  }
+}
+
+.green-flash {
+  animation: green-flash 0.3s ease-out;
+}
+
+/* ─── Neon Glow ──────────────────────────────────────────────────────────── */
+.neon-glow {
+  text-shadow: 0 0 10px var(--green-bright), 0 0 20px var(--green-bright),
+    0 0 40px rgba(57, 255, 20, 0.5);
+}
+
+.neon-glow-subtle {
+  text-shadow: 0 0 8px rgba(0, 166, 81, 0.6);
+}
+
+/* ─── Tailwind Inline Theme Tokens (v4) ──────────────────────────────────── */
+@theme {
+  --color-bg-primary: #050a05;
+  --color-bg-secondary: #0d1117;
+  --color-bg-tertiary: #111827;
+  --color-green-primary: #00a651;
+  --color-green-bright: #39ff14;
+  --color-green-muted: #1a4d2e;
+  --color-green-dim: #0f2918;
+  --color-amber: #ffb800;
+  --color-text-primary: #f5f5f7;
+  --color-text-secondary: #e5e5ea;
+  --color-text-muted: #8e8e93;
+  --color-border-subtle: #3a3a3c;
+
+  --font-family-pixel: "Press Start 2P", monospace;
+  --font-family-mono: "JetBrains Mono", monospace;
+  --font-family-sans: "Inter", system-ui, sans-serif;
+
+  --animate-cursor-blink: cursor-blink 1s step-end infinite;
+  --animate-grid-drift: grid-drift 20s linear infinite;
+}
+
+/* ─── Section Spacing ────────────────────────────────────────────────────── */
+.section-padding {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}
+
+@media (min-width: 768px) {
+  .section-padding {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+}
+
+/* ─── Selection ──────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(0, 166, 81, 0.3);
+  color: var(--green-bright);
+}

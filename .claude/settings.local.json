@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "Bash(npx create-next-app@latest:*)",
+      "Bash(npx create-next-app@15:*)",
+      "Bash(npm init:*)",
+      "Bash(tail:*)",
+      "Bash(git init && git add -A && git commit -m \"$\\(cat <<'EOF'\nInitial scaffold: Next.js 15 + Tailwind v4 + foundation files\n\nSets up the project structure for sudhanva.dev:\n- Next.js 15 with App Router, TypeScript, Tailwind v4\n- Framer Motion \\(motion@12\\), clsx, tailwind-merge\n- Design system: globals.css with CSS vars, CRT overlay, pixel border\n- Data layer: all portfolio content in src/lib/data.ts\n- Animation variants in src/lib/animations.ts\n- TypeScript types in src/types/index.ts\n- ThemeProvider \\(dark/light\\) and CRTOverlay primitives\n- Compilable placeholder page.tsx\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" 2>&1)"
+    ]
+  }
+}
