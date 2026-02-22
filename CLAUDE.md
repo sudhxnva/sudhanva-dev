@@ -6,6 +6,8 @@ Personal portfolio website for Sudhanva Manjunath.
 **Stack:** Next.js 15, TypeScript, Tailwind v4, motion@12 (Framer Motion)
 **Theme:** Apple minimalism × Pokemon Emerald × terminal/hacker aesthetic
 
+> **Sub-agents: read [`PLAN.md`](./PLAN.md) before starting work.** It contains the full design spec — color palette, typography, all UI patterns with exact CSS, animation strategy with timing, component descriptions, content, and a verification checklist.
+
 ## Development Workflow
 
 ### Issue-Driven Sub-Agent PRs
