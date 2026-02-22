@@ -4,17 +4,25 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { loadingLogoReveal, crtExit, fadeIn } from "@/lib/animations";
 import { bootLines } from "@/lib/data";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface LoadingScreenProps {
   onComplete: () => void;
 }
 
 export function LoadingScreen({ onComplete }: LoadingScreenProps) {
+  const reducedMotion = useReducedMotion();
   const [visibleLines, setVisibleLines] = useState<number>(0);
   const [showBootOk, setShowBootOk] = useState(false);
   const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
+    // Skip animation sequence for reduced-motion users
+    if (reducedMotion) {
+      onComplete();
+      return;
+    }
+
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     // Print terminal lines one by one starting at t=600ms
@@ -34,7 +42,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
     timers.push(setTimeout(() => onComplete(), 2600));
 
     return () => timers.forEach(clearTimeout);
-  }, [onComplete]);
+  }, [onComplete, reducedMotion]);
 
   return (
     <motion.div
