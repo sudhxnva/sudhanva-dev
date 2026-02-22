@@ -256,3 +256,9 @@ body {
   background: rgba(0, 166, 81, 0.3);
   color: var(--green-bright);
 }
+
+/* ─── NavBar Mobile ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .nav-links-desktop { display: none !important; }
+  .nav-burger { display: block !important; }
+}
