@@ -6,6 +6,11 @@ export function useTypewriter(text: string, speed: number = 50): string {
   const [displayed, setDisplayed] = useState("");
 
   useEffect(() => {
+    // speed=0 means instant — skip the interval entirely
+    if (speed === 0) {
+      setDisplayed(text);
+      return;
+    }
     setDisplayed("");
     let index = 0;
     const id = setInterval(() => {

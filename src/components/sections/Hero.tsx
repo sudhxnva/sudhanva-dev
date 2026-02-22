@@ -4,13 +4,17 @@ import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { letterReveal, staggerFast, fadeIn } from "@/lib/animations";
 import { heroRoles } from "@/lib/data";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/cn";
 import { useEffect, useState } from "react";
 
-// Inline typewriter (TypewriterText from #3 may not be merged into master yet)
 function useTypewriterSimple(text: string, speed = 60) {
   const [displayed, setDisplayed] = useState("");
   useEffect(() => {
+    if (speed === 0) {
+      setDisplayed(text);
+      return;
+    }
     setDisplayed("");
     let i = 0;
     const id = setInterval(() => {
@@ -28,8 +32,9 @@ const NAME_CHARS = NAME.split("");
 
 export function Hero() {
   const { loadingComplete } = useTheme();
+  const reducedMotion = useReducedMotion();
   const [roleIndex, setRoleIndex] = useState(0);
-  const displayedRole = useTypewriterSimple(heroRoles[roleIndex], 60);
+  const displayedRole = useTypewriterSimple(heroRoles[roleIndex], reducedMotion ? 0 : 60);
 
   useEffect(() => {
     if (displayedRole === heroRoles[roleIndex]) {

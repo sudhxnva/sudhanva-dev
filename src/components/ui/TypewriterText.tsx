@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTypewriter } from "@/hooks/useTypewriter";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/cn";
 
 interface TypewriterTextProps {
@@ -17,18 +18,19 @@ export function TypewriterText({
   pauseDuration = 1800,
   className,
 }: TypewriterTextProps) {
+  const reducedMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
-  const displayed = useTypewriter(texts[index], speed);
+  // When reduced-motion is on, pass speed=0 to instantly display the full text
+  const displayed = useTypewriter(texts[index], reducedMotion ? 0 : speed);
 
   useEffect(() => {
     if (displayed === texts[index]) {
-      // Finished typing — pause, then advance
       const t = setTimeout(() => {
         setIndex((i) => (i + 1) % texts.length);
-      }, pauseDuration);
+      }, reducedMotion ? 2000 : pauseDuration);
       return () => clearTimeout(t);
     }
-  }, [displayed, texts, index, pauseDuration]);
+  }, [displayed, texts, index, pauseDuration, reducedMotion]);
 
   return (
     <span
