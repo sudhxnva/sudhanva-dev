@@ -17,10 +17,64 @@ Each feature is tracked as a GitHub issue. Sub-agents implement features and rai
 1. Claim the issue (assign to yourself)
 2. Create a branch: `git checkout -b feat/issue-<N>-<slug>`
 3. Implement the feature described in the issue
-4. Ensure `npx next build` passes with zero errors
-5. Raise a PR against `master` referencing `Closes #<N>`
+4. Run the **Screenshot Testing Loop** (see below) — fix any visual issues found
+5. Ensure `npx next build` passes with zero errors
+6. Raise a PR against `master` referencing `Closes #<N>`
 
 **Active issues:** https://github.com/sudhxnva/sudhanva-dev/issues
+
+### Screenshot Testing Loop (Standard — 2-pass)
+
+Every sub-agent **must** run a 2-pass visual verification before committing. Playwright + Chromium are installed as dev dependencies.
+
+**Port assignment** (avoid collisions when agents run in parallel):
+| Issue | Port |
+|-------|------|
+| #3 | 3003 |
+| #4 | 3004 |
+| #5 | 3005 |
+| #6 | 3006 |
+| #7 | 3007 |
+| #8 | 3008 |
+| #9 | 3009 |
+
+**Steps:**
+```bash
+# 1. Start dev server on assigned port (background)
+npm run dev -- --port <PORT> &
+DEV_PID=$!
+sleep 6  # wait for Next.js to be ready
+
+# 2. Pass 1 — take screenshot
+npx playwright screenshot http://localhost:<PORT> /tmp/ss-issue-<N>-pass1.png --full-page
+
+# 3. Review the screenshot (Read the file — it's an image Claude can view)
+# Compare against PLAN.md design spec:
+#   - Correct colors (green-primary #00a651, bg-primary #050a05, etc.)
+#   - Correct fonts (Press Start 2P for headings, JetBrains Mono for terminal/code)
+#   - Pixel borders visible and clean
+#   - Glass cards rendering correctly
+#   - Animations wouldn't be captured but layout should be right
+#   - No broken layout, overflow, or missing content
+
+# 4. Fix any visual issues found
+
+# 5. Pass 2 — confirm fixes
+npx playwright screenshot http://localhost:<PORT> /tmp/ss-issue-<N>-pass2.png --full-page
+# Read pass2 screenshot to verify issues are resolved
+
+# 6. Kill dev server
+kill $DEV_PID 2>/dev/null || true
+```
+
+**For primitive component issues (#3, etc.):** Temporarily add a demo render to `page.tsx` to visually test the components, screenshot it, then revert `page.tsx` to its original state before committing.
+
+**What to check in screenshots:**
+- Background is near-black (`#050a05`), not white
+- Green accents are correct Pokémon Emerald green (`#00a651`)
+- No layout breaks, horizontal overflow, or unstyled elements
+- Section headings have `>_` prefix and correct font
+- No console errors visible in the page render
 
 ### Branch Naming
 ```
