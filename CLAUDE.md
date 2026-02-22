@@ -1,0 +1,133 @@
+# sudhanva.dev — Claude Code Guide
+
+## Project
+
+Personal portfolio website for Sudhanva Manjunath.
+**Stack:** Next.js 15, TypeScript, Tailwind v4, motion@12 (Framer Motion)
+**Theme:** Apple minimalism × Pokemon Emerald × terminal/hacker aesthetic
+
+## Development Workflow
+
+### Issue-Driven Sub-Agent PRs
+Each feature is tracked as a GitHub issue. Sub-agents implement features and raise PRs against `master`.
+
+**Workflow per issue:**
+1. Claim the issue (assign to yourself)
+2. Create a branch: `git checkout -b feat/issue-<N>-<slug>`
+3. Implement the feature described in the issue
+4. Ensure `npx next build` passes with zero errors
+5. Raise a PR against `master` referencing `Closes #<N>`
+
+**Active issues:** https://github.com/sudhxnva/sudhanva-dev/issues
+
+### Branch Naming
+```
+feat/issue-1-core-ui-primitives
+feat/issue-2-hooks-theme-toggle
+feat/issue-3-interactive-primitives
+feat/issue-4-loading-screen
+feat/issue-5-hero-navbar
+feat/issue-6-about-experience
+feat/issue-7-projects-skills
+feat/issue-8-education-contact
+feat/issue-9-polish
+```
+
+## Critical Rules
+
+### Imports
+- **ALWAYS** import from `"motion/react"` — NEVER `"framer-motion"`
+- Use `@/` alias for all internal imports
+
+### Tailwind v4
+- No `tailwind.config.ts` needed for basic usage
+- Use `@theme` block in `globals.css` for custom tokens
+- Custom CSS vars defined in `:root` in `globals.css`
+
+### "use client" Directive
+- Required on ANY component using React hooks or motion
+- `app/layout.tsx` and `app/page.tsx` start as Server Components
+- Add `"use client"` only at the component level where needed
+
+### Glass Cards
+- **NEVER** use `overflow: hidden` on glass card parents — breaks WebKit backdrop-filter
+- Use `overflow: clip` if clipping is needed
+
+### Pixel Borders
+- Add `transform: translateZ(0)` to prevent hairline gaps on retina
+- Use the `.pixel-border` CSS class (defined in globals.css) or the `<PixelBorder>` component
+
+### Font Sizes
+- Press Start 2P: **max 16px** — larger sizes are unreadable
+- Subset to `latin` only
+
+### Animations
+- All Framer Motion variants live in `src/lib/animations.ts`
+- Import and reuse — don't define inline variants
+- Always check `useReducedMotion()` before animating
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx          # Root layout (Server Component)
+│   ├── page.tsx            # Main page (Client Component)
+│   └── globals.css         # Design system, CSS vars, keyframes
+├── components/
+│   ├── layout/
+│   │   ├── NavBar.tsx
+│   │   └── SectionWrapper.tsx
+│   ├── sections/
+│   │   ├── LoadingScreen.tsx
+│   │   ├── Hero.tsx
+│   │   ├── About.tsx
+│   │   ├── Experience.tsx
+│   │   ├── Projects.tsx
+│   │   ├── Skills.tsx
+│   │   ├── Education.tsx
+│   │   └── Contact.tsx
+│   ├── ui/
+│   │   ├── PixelBorder.tsx
+│   │   ├── TerminalWindow.tsx
+│   │   ├── TypewriterText.tsx
+│   │   ├── GlassCard.tsx
+│   │   ├── PixelStatBar.tsx
+│   │   ├── CRTOverlay.tsx
+│   │   ├── PixelSprite.tsx
+│   │   ├── SectionHeading.tsx
+│   │   └── ThemeToggle.tsx
+│   └── providers/
+│       └── ThemeProvider.tsx
+├── hooks/
+│   ├── useTypewriter.ts
+│   ├── useScrollSection.ts
+│   └── useReducedMotion.ts
+├── lib/
+│   ├── animations.ts       # ALL Framer Motion variants
+│   ├── cn.ts               # clsx + tailwind-merge
+│   └── data.ts             # ALL portfolio content
+└── types/
+    └── index.ts
+```
+
+## Design Tokens (CSS Variables)
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--bg-primary` | `#050a05` | Page background |
+| `--bg-secondary` | `#0d1117` | Card/terminal backgrounds |
+| `--green-primary` | `#00a651` | Main accent, borders |
+| `--green-bright` | `#39ff14` | Neon cursor, glows |
+| `--green-muted` | `#1a4d2e` | Subtle borders |
+| `--white` | `#f5f5f7` | Primary text |
+| `--gray-400` | `#8e8e93` | Metadata text |
+| `--amber` | `#ffb800` | Warnings, highlights |
+
+## Commands
+
+```bash
+npm run dev     # Start dev server
+npm run build   # Production build (must pass before PR)
+npx tsc --noEmit  # Type check only
+```
