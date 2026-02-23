@@ -1,60 +1,30 @@
 import type { Metadata } from "next";
-import { Press_Start_2P, JetBrains_Mono, Inter } from "next/font/google";
+import { Inter, JetBrains_Mono, Lora } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { CRTOverlay } from "@/components/ui/CRTOverlay";
 
-const pressStart2P = Press_Start_2P({
-  weight: "400",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  variable: "--font-press-start-2p",
   display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
   variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
   display: "swap",
 });
 
-const inter = Inter({
+const ubuntuSerif = Lora({
+  variable: "--font-ubuntu-serif",
   subsets: ["latin"],
-  variable: "--font-inter",
   display: "swap",
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
-  title: "Sudhanva Manjunath — Software Engineer",
-  description:
-    "Software engineer passionate about UX and HCI. MS CS at CU Boulder. Building AI systems, React Native apps, and exceptional user experiences.",
-  keywords: [
-    "Sudhanva Manjunath",
-    "Software Engineer",
-    "React Native",
-    "Next.js",
-    "AI",
-    "UX",
-    "CU Boulder",
-  ],
-  authors: [{ name: "Sudhanva Manjunath" }],
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "https://sudhanva.dev",
-    title: "Sudhanva Manjunath — Software Engineer",
-    description:
-      "Software engineer passionate about UX and HCI. MS CS at CU Boulder.",
-    siteName: "sudhanva.dev",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Sudhanva Manjunath — Software Engineer",
-    description:
-      "Software engineer passionate about UX and HCI. MS CS at CU Boulder.",
-  },
-  icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>",
-  },
+  title: "Sudhanva Manjunath",
+  description: "Software engineer building thoughtful systems at the intersection of UX and engineering.",
 };
 
 export default function RootLayout({
@@ -65,12 +35,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${pressStart2P.variable} ${jetbrainsMono.variable} ${inter.variable}`}
+        className={`${inter.variable} ${jetbrainsMono.variable} ${ubuntuSerif.variable}`}
       >
-        <ThemeProvider>
-          <CRTOverlay />
-          {children}
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
