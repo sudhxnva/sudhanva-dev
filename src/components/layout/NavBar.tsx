@@ -1,151 +1,108 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import { useScrollSection } from "@/hooks/useScrollSection";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { navSlideDown } from "@/lib/animations";
-import { navLinks } from "@/lib/data";
-import { cn } from "@/lib/cn";
-
-const SECTION_IDS = ["about", "experience", "projects", "skills", "education", "contact"];
 
 export function NavBar() {
-  const { loadingComplete } = useTheme();
-  const activeSection = useScrollSection(SECTION_IDS);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  return (
-    <AnimatePresence>
-      {loadingComplete && (
-        <motion.nav
-          key="navbar"
-          variants={navSlideDown}
-          initial="hidden"
-          animate="visible"
-          role="navigation"
-          aria-label="Main navigation"
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const navLinks = [
+    { label: "About", href: "#about" },
+    { label: "Work", href: "#experience" },
+    { label: "Contact", href: "mailto:sudhanva.m@icloud.com" },
+  ];
+
+  if (!scrolled) {
+    return (
+      <nav
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          padding: "20px 32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          zIndex: 1000,
+          transition: "all 400ms cubic-bezier(0.22, 1, 0.36, 1)",
+        }}
+      >
+        <span
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-            backdropFilter: "blur(12px) saturate(180%)",
-            WebkitBackdropFilter: "blur(12px) saturate(180%)",
-            background: "rgba(5, 10, 5, 0.85)",
-            borderBottom: "1px solid var(--green-muted)",
+            fontFamily: "var(--font-sans)",
+            fontSize: "15px",
+            color: "var(--text)",
           }}
         >
-          <div
-            style={{
-              maxWidth: "1200px",
-              margin: "0 auto",
-              padding: "0 1.5rem",
-              height: "60px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
+          Sudhanva Manjunath
+        </span>
+        <div
+          style={{ display: "flex", alignItems: "center", gap: "28px" }}
+        >
+          {navLinks.map((link) => (
             <a
-              href="#"
-              style={{
-                fontFamily: "var(--font-pixel)",
-                fontSize: "12px",
-                color: "var(--green-primary)",
-                textDecoration: "none",
-                letterSpacing: "0.05em",
-              }}
+              key={link.label}
+              href={link.href}
+              className="nav-link"
             >
-              S.M
+              {link.label}
             </a>
+          ))}
+          <ThemeToggle />
+        </div>
+      </nav>
+    );
+  }
 
-            {/* Desktop nav links */}
-            <div className="nav-links-desktop" style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-              {navLinks.map(({ label, href }) => {
-                const sectionId = href.replace("#", "");
-                const isActive = activeSection === sectionId;
-                return (
-                  <a
-                    key={label}
-                    href={href}
-                    className={cn(isActive && "pixel-border")}
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "0.8rem",
-                      color: isActive ? "var(--green-bright)" : "var(--gray-400)",
-                      textDecoration: "none",
-                      padding: isActive ? "4px 10px" : "4px 0",
-                      transition: "color 0.2s",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    {label}
-                  </a>
-                );
-              })}
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <ThemeToggle />
-              <button
-                onClick={() => setMobileOpen((o) => !o)}
-                aria-label={mobileOpen ? "Close menu" : "Open menu"}
-                className="nav-burger"
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--green-primary)",
-                  cursor: "pointer",
-                  fontFamily: "var(--font-pixel)",
-                  fontSize: "12px",
-                  padding: "4px",
-                  display: "none",
-                }}
-              >
-                {mobileOpen ? "✕" : "≡"}
-              </button>
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {mobileOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                style={{
-                  overflow: "hidden",
-                  background: "rgba(5, 10, 5, 0.95)",
-                  borderTop: "1px solid var(--green-muted)",
-                }}
-              >
-                <div style={{ padding: "1rem 1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  {navLinks.map(({ label, href }) => (
-                    <a
-                      key={label}
-                      href={href}
-                      onClick={() => setMobileOpen(false)}
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "0.875rem",
-                        color: "var(--gray-400)",
-                        textDecoration: "none",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      &gt;_ {label}
-                    </a>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.nav>
-      )}
-    </AnimatePresence>
+  return (
+    <nav
+      style={{
+        position: "fixed",
+        top: "16px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        padding: "10px 20px",
+        display: "flex",
+        alignItems: "center",
+        gap: "20px",
+        zIndex: 1000,
+        borderRadius: "9999px",
+        background: "rgba(13,12,11,0.88)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border: "1px solid var(--border)",
+        transition: "all 400ms cubic-bezier(0.22, 1, 0.36, 1)",
+        whiteSpace: "nowrap",
+      }}
+    >
+      <span
+        style={{
+          fontFamily: "var(--font-sans)",
+          fontSize: "14px",
+          fontWeight: 600,
+          color: "var(--accent)",
+          marginRight: "8px",
+        }}
+      >
+        SM
+      </span>
+      {navLinks.map((link) => (
+        <a
+          key={link.label}
+          href={link.href}
+          className="nav-link"
+        >
+          {link.label}
+        </a>
+      ))}
+      <ThemeToggle />
+    </nav>
   );
 }

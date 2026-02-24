@@ -1,134 +1,130 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { loadingLogoReveal, crtExit, fadeIn } from "@/lib/animations";
-import { bootLines } from "@/lib/data";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { motion } from "motion/react";
 
 interface LoadingScreenProps {
   onComplete: () => void;
 }
 
+const CHARS =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&";
+const TARGET = "sudhanva manjunath";
+
 export function LoadingScreen({ onComplete }: LoadingScreenProps) {
-  const reducedMotion = useReducedMotion();
-  const [visibleLines, setVisibleLines] = useState<number>(0);
-  const [showBootOk, setShowBootOk] = useState(false);
-  const [exiting, setExiting] = useState(false);
+  const [display, setDisplay] = useState(
+    TARGET.split("").map(() => " ")
+  );
+  const [lockedCount, setLockedCount] = useState(0);
+  const [phase, setPhase] = useState<"scramble" | "lock" | "hold" | "fade">(
+    "scramble"
+  );
+  const [visible, setVisible] = useState(true);
+
+  // Check for reduced motion
+  const prefersReducedMotion =
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false;
 
   useEffect(() => {
-    // Skip animation sequence for reduced-motion users
-    if (reducedMotion) {
+    if (prefersReducedMotion) {
       onComplete();
       return;
     }
 
-    const timers: ReturnType<typeof setTimeout>[] = [];
-
-    // Print terminal lines one by one starting at t=600ms
-    bootLines.forEach((_, i) => {
-      timers.push(
-        setTimeout(() => setVisibleLines((n) => n + 1), 600 + i * 350)
+    // Phase 1: Scramble all positions
+    const scrambleInterval = setInterval(() => {
+      setDisplay(
+        TARGET.split("").map((char) =>
+          char === " " ? " " : CHARS[Math.floor(Math.random() * CHARS.length)]
+        )
       );
-    });
+    }, 40);
 
-    // Boot OK at t=2000ms
-    timers.push(setTimeout(() => setShowBootOk(true), 2000));
+    // Phase 2: Start locking in after 300ms
+    const lockStart = setTimeout(() => {
+      clearInterval(scrambleInterval);
+      setPhase("lock");
+    }, 300);
 
-    // Start CRT exit at t=2400ms
-    timers.push(setTimeout(() => setExiting(true), 2400));
+    return () => {
+      clearInterval(scrambleInterval);
+      clearTimeout(lockStart);
+    };
+  }, []);
 
-    // Call onComplete at t=2600ms
-    timers.push(setTimeout(() => onComplete(), 2600));
+  useEffect(() => {
+    if (phase !== "lock") return;
 
-    return () => timers.forEach(clearTimeout);
-  }, [onComplete, reducedMotion]);
+    if (lockedCount >= TARGET.length) {
+      setPhase("hold");
+      // Phase 3 → 4: fade after hold
+      setTimeout(() => {
+        setPhase("fade");
+        setTimeout(() => {
+          setVisible(false);
+          onComplete();
+        }, 300);
+      }, 300);
+      return;
+    }
+
+    const lockTimer = setTimeout(() => {
+      setDisplay((prev) => {
+        const next = [...prev];
+        next[lockedCount] = TARGET[lockedCount];
+        return next;
+      });
+      setLockedCount((prev) => prev + 1);
+    }, 80);
+
+    return () => clearTimeout(lockTimer);
+  }, [phase, lockedCount]);
+
+  // Keep scrambling unlocked chars during lock phase
+  useEffect(() => {
+    if (phase !== "lock") return;
+    const interval = setInterval(() => {
+      setDisplay((prev) =>
+        prev.map((char, i) => {
+          if (i < lockedCount) return TARGET[i];
+          if (TARGET[i] === " ") return " ";
+          return CHARS[Math.floor(Math.random() * CHARS.length)];
+        })
+      );
+    }, 40);
+    return () => clearInterval(interval);
+  }, [phase, lockedCount]);
+
+  if (!visible) return null;
 
   return (
     <motion.div
-      key="loading-screen"
-      variants={crtExit}
-      initial="visible"
-      animate={exiting ? "exit" : "visible"}
+      initial={{ opacity: 1 }}
+      animate={{ opacity: phase === "fade" ? 0 : 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 9998,
-        background: "var(--bg-primary)",
+        background: "#0d0c0b",
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        transformOrigin: "top",
+        zIndex: 9999,
       }}
     >
-      {/* Logo */}
-      <motion.div
-        variants={loadingLogoReveal}
-        initial="hidden"
-        animate="visible"
-        transition={{ delay: 0.1 }}
-        style={{ marginBottom: "3rem", textAlign: "center" }}
-      >
-        <span
-          style={{
-            fontFamily: "var(--font-pixel)",
-            fontSize: "16px",
-            color: "var(--green-primary)",
-            letterSpacing: "0.2em",
-          }}
-        >
-          S.M
-        </span>
-      </motion.div>
-
-      {/* Terminal lines */}
-      <div
+      <span
         style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "0.875rem",
-          color: "var(--green-bright)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.5rem",
-          minWidth: "280px",
+          fontFamily: "var(--font-serif)",
+          fontSize: "clamp(28px, 5vw, 60px)",
+          color: "#f0ede8",
+          letterSpacing: "0.02em",
+          fontVariantNumeric: "tabular-nums",
         }}
       >
-        {bootLines.slice(0, visibleLines).map((line, i) => (
-          <motion.div
-            key={i}
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-          >
-            {line}
-          </motion.div>
-        ))}
-      </div>
-
-      {/* BOOT OK */}
-      <AnimatePresence>
-        {showBootOk && (
-          <motion.div
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            style={{ marginTop: "2rem", textAlign: "center" }}
-          >
-            <span
-              className="neon-glow"
-              style={{
-                fontFamily: "var(--font-pixel)",
-                fontSize: "12px",
-                color: "var(--green-bright)",
-                letterSpacing: "0.3em",
-              }}
-            >
-              BOOT OK
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {display.join("")}
+      </span>
     </motion.div>
   );
 }
