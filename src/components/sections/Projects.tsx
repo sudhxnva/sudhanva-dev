@@ -1,204 +1,167 @@
 "use client";
 
-import { motion } from "motion/react";
-import { SectionWrapper } from "@/components/layout/SectionWrapper";
-import { SectionHeading } from "@/components/layout/SectionHeading";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { fadeInUp, staggerContainer, cardPop } from "@/lib/animations";
+import { useRef } from "react";
+import { motion, useMotionValue, useSpring } from "motion/react";
 import { projects } from "@/lib/data";
+import type { Project } from "@/types";
+
+function ProjectCard({ project, index }: { project: Project; index: number }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
+  const springRotateX = useSpring(rotateX, { stiffness: 200, damping: 20 });
+  const springRotateY = useSpring(rotateY, { stiffness: 200, damping: 20 });
+
+  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    rotateX.set(((mouseY - centerY) / rect.height) * -6);
+    rotateY.set(((mouseX - centerX) / rect.width) * 6);
+  };
+
+  const onMouseLeave = () => {
+    rotateX.set(0);
+    rotateY.set(0);
+  };
+
+  const projectUrl = project.githubUrl || project.liveUrl || null;
+  const tech: string[] = project.stack || [];
+
+  return (
+    <motion.div
+      ref={cardRef}
+      className="project-card"
+      data-cursor="project"
+      style={{
+        border: "1px solid var(--border)",
+        borderRadius: "8px",
+        padding: "24px",
+        background: "var(--bg)",
+        cursor: "none",
+        transformStyle: "preserve-3d",
+        perspective: "800px",
+        rotateX: springRotateX,
+        rotateY: springRotateY,
+        transition: "background 150ms ease",
+      }}
+      onMouseMove={onMouseMove}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--bg-surface)" }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--bg)"; rotateX.set(0); rotateY.set(0) }}
+      initial={{ opacity: 0, filter: "blur(8px)", y: 20 }}
+      whileInView={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: "12px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "12px",
+              color: "var(--text-faint)",
+            }}
+          >
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "16px",
+              fontWeight: 500,
+              color: "var(--text)",
+            }}
+          >
+            {project.title}
+          </span>
+        </div>
+        {projectUrl && (
+          <a
+            href={projectUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "13px",
+              color: "var(--text-muted)",
+              textDecoration: "none",
+            }}
+          >
+            ↗
+          </a>
+        )}
+      </div>
+
+      <p
+        style={{
+          fontFamily: "var(--font-sans)",
+          fontSize: "15px",
+          lineHeight: 1.6,
+          color: "var(--text-muted)",
+          marginBottom: "16px",
+        }}
+      >
+        {project.description}
+      </p>
+
+      {tech.length > 0 && (
+        <p
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: "12px",
+            color: "var(--text-faint)",
+          }}
+        >
+          {tech.join(" · ")}
+        </p>
+      )}
+    </motion.div>
+  );
+}
 
 export function Projects() {
   return (
-    <SectionWrapper id="projects" className="section-padding">
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.5rem" }}>
-        <SectionHeading title="projects" />
+    <section id="projects" style={{ padding: "120px 0" }}>
+      <div style={{ maxWidth: "860px", margin: "0 auto", padding: "0 40px" }}>
+        <motion.p
+          className="section-label"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          Projects
+        </motion.p>
 
         <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr",
-            gap: "1.5rem",
-            marginTop: "3rem",
+            height: "1px",
+            background: "var(--border)",
+            transformOrigin: "left",
+            marginBottom: "32px",
           }}
-          className="projects-grid"
-        >
-          {projects.map((project) => (
-            <motion.div
-              key={project.id}
-              variants={fadeInUp}
-              whileHover="hover"
-              initial="rest"
-              animate="rest"
-            >
-              <motion.div
-                variants={cardPop}
-                style={project.highlight ? {
-                  boxShadow: "0 0 0 1px var(--amber), 0 0 20px rgba(255,184,0,0.1)",
-                } : undefined}
-              >
-                <GlassCard pixelBorder className={project.highlight ? "project-featured" : ""}>
-                  {/* Featured badge */}
-                  {project.highlight && (
-                    <div style={{ marginBottom: "0.75rem" }}>
-                      <span
-                        className="pixel-border"
-                        style={{
-                          fontFamily: "var(--font-pixel)",
-                          fontSize: "8px",
-                          color: "var(--amber)",
-                          padding: "3px 8px",
-                          letterSpacing: "0.1em",
-                          boxShadow:
-                            "0 -4px 0 0 var(--amber), 0 4px 0 0 var(--amber), -4px 0 0 0 var(--amber), 4px 0 0 0 var(--amber), -4px -4px 0 0 var(--bg-primary), 4px -4px 0 0 var(--bg-primary), -4px 4px 0 0 var(--bg-primary), 4px 4px 0 0 var(--bg-primary)",
-                        }}
-                      >
-                        FEATURED
-                      </span>
-                    </div>
-                  )}
+        />
 
-                  {/* Title */}
-                  <h3
-                    style={{
-                      fontFamily: "var(--font-pixel)",
-                      fontSize: "10px",
-                      color: "var(--white)",
-                      margin: "0 0 0.75rem",
-                      lineHeight: 1.6,
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    {project.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p
-                    style={{
-                      fontFamily: "var(--font-sans)",
-                      fontSize: "0.875rem",
-                      color: "var(--gray-400)",
-                      lineHeight: 1.7,
-                      margin: "0 0 1rem",
-                    }}
-                  >
-                    {project.description}
-                  </p>
-
-                  {/* Bullets */}
-                  <ul
-                    style={{
-                      margin: "0 0 1rem",
-                      padding: 0,
-                      listStyle: "none",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.35rem",
-                    }}
-                  >
-                    {project.bullets.map((b, i) => (
-                      <li
-                        key={i}
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          fontSize: "0.78rem",
-                          color: "var(--gray-400)",
-                          display: "flex",
-                          gap: "0.5rem",
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        <span
-                          style={{
-                            color: project.highlight
-                              ? "var(--amber)"
-                              : "var(--green-primary)",
-                            flexShrink: 0,
-                          }}
-                        >
-                          ▸
-                        </span>
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Tech stack tags */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "0.5rem",
-                      marginBottom: project.githubUrl || project.liveUrl ? "1rem" : 0,
-                    }}
-                  >
-                    {project.stack.map((tech) => (
-                      <span
-                        key={tech}
-                        className="pixel-border"
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          fontSize: "0.65rem",
-                          color: "var(--green-muted)",
-                          padding: "3px 8px",
-                          letterSpacing: "0.05em",
-                        }}
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Links */}
-                  {(project.githubUrl || project.liveUrl) && (
-                    <div style={{ display: "flex", gap: "1rem", marginTop: "0.75rem" }}>
-                      {project.githubUrl && (
-                        <a
-                          href={project.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: "0.75rem",
-                            color: "var(--green-primary)",
-                            textDecoration: "none",
-                          }}
-                        >
-                          ◈ GitHub ↗
-                        </a>
-                      )}
-                      {project.liveUrl && (
-                        <a
-                          href={project.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: "0.75rem",
-                            color: "var(--green-primary)",
-                            textDecoration: "none",
-                          }}
-                        >
-                          ◉ Live ↗
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </GlassCard>
-              </motion.div>
-            </motion.div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          {projects.map((project, i) => (
+            <ProjectCard key={project.id} project={project} index={i} />
           ))}
-        </motion.div>
+        </div>
       </div>
-
-      <style>{`
-        @media (min-width: 768px) {
-          .projects-grid { grid-template-columns: 1fr 1fr !important; }
-        }
-      `}</style>
-    </SectionWrapper>
+    </section>
   );
 }
