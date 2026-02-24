@@ -43,8 +43,14 @@ export function Hero() {
         Hello, I&apos;m
       </motion.p>
 
-      {/* Name — opacity only (no blur/translate) for seamless loader hand-off */}
+      {/*
+        Name — layoutId="hero-name" creates a shared element transition with the
+        LoadingScreen's name element. When the loading screen unmounts, Framer Motion
+        records its position and springs this h1 from there to its actual position.
+        No explicit initial/animate needed — layoutId handles the entrance.
+      */}
       <motion.h1
+        layoutId="hero-name"
         style={{
           fontFamily: "var(--font-serif)",
           fontSize: `${NAME_FONT_SIZE}px`,
@@ -54,9 +60,6 @@ export function Hero() {
           fontWeight: 400,
           y: nameY,
         }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
       >
         Sudhanva Manjunath
       </motion.h1>
