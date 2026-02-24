@@ -1,190 +1,87 @@
-"use client";
+"use client"
 
-import { motion, AnimatePresence } from "motion/react";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import { letterReveal, staggerFast, fadeIn } from "@/lib/animations";
-import { heroRoles } from "@/lib/data";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { cn } from "@/lib/cn";
-import { useEffect, useState } from "react";
-
-function useTypewriterSimple(text: string, speed = 60) {
-  const [displayed, setDisplayed] = useState("");
-  useEffect(() => {
-    if (speed === 0) {
-      setDisplayed(text);
-      return;
-    }
-    setDisplayed("");
-    let i = 0;
-    const id = setInterval(() => {
-      i++;
-      setDisplayed(text.slice(0, i));
-      if (i >= text.length) clearInterval(id);
-    }, speed);
-    return () => clearInterval(id);
-  }, [text, speed]);
-  return displayed;
-}
-
-const NAME = "SUDHANVA MANJUNATH";
-const NAME_CHARS = NAME.split("");
+import { useRef } from "react"
+import { motion, useScroll, useTransform } from "motion/react"
 
 export function Hero() {
-  const { loadingComplete } = useTheme();
-  const reducedMotion = useReducedMotion();
-  const [roleIndex, setRoleIndex] = useState(0);
-  const displayedRole = useTypewriterSimple(heroRoles[roleIndex], reducedMotion ? 0 : 60);
+  const containerRef = useRef<HTMLElement>(null)
+  const { scrollY } = useScroll()
+  const nameY = useTransform(scrollY, [0, 400], [0, -40])
+  const subtitleY = useTransform(scrollY, [0, 400], [0, -20])
 
-  useEffect(() => {
-    if (displayedRole === heroRoles[roleIndex]) {
-      const t = setTimeout(() => setRoleIndex((i) => (i + 1) % heroRoles.length), 1800);
-      return () => clearTimeout(t);
-    }
-  }, [displayedRole, roleIndex]);
+  const blurFade = {
+    initial: { opacity: 0, filter: "blur(8px)", y: 20 },
+    animate: { opacity: 1, filter: "blur(0px)", y: 0 },
+  }
 
   return (
     <section
+      ref={containerRef}
       id="hero"
-      className={cn("hero-grid")}
       style={{
-        minHeight: "100vh",
+        height: "100vh",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
-        position: "relative",
-        padding: "0 1.5rem",
+        padding: "0 40px",
+        maxWidth: "900px",
+        margin: "0 auto",
+        width: "100%",
       }}
     >
-      <AnimatePresence>
-        {loadingComplete && (
-          <motion.div
-            key="hero-content"
-            initial="hidden"
-            animate="visible"
-            variants={fadeIn}
-            style={{ textAlign: "center", maxWidth: "900px", width: "100%" }}
-          >
-            {/* Name with letter stagger */}
-            <motion.div
-              variants={staggerFast}
-              initial="hidden"
-              animate="visible"
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                gap: "0",
-                marginBottom: "1.5rem",
-                perspective: "400px",
-              }}
-            >
-              {NAME_CHARS.map((char, i) => (
-                <motion.span
-                  key={i}
-                  variants={letterReveal}
-                  style={{
-                    fontFamily: "var(--font-pixel)",
-                    fontSize: "clamp(10px, 2.5vw, 16px)",
-                    color: "var(--white)",
-                    display: "inline-block",
-                    whiteSpace: char === " " ? "pre" : "normal",
-                    padding: char === " " ? "0 0.2em" : "0",
-                    lineHeight: 1.4,
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  {char}
-                </motion.span>
-              ))}
-            </motion.div>
+      <motion.h1
+        style={{
+          fontFamily: "var(--font-serif)",
+          fontSize: "clamp(40px, 8vw, 88px)",
+          color: "var(--text)",
+          lineHeight: 1.1,
+          marginBottom: "24px",
+          fontWeight: 400,
+          y: nameY,
+        }}
+        {...blurFade}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      >
+        Sudhanva Manjunath
+      </motion.h1>
 
-            {/* Typewriter subtitle */}
-            <motion.div variants={fadeIn} style={{ marginBottom: "2.5rem" }}>
-              <span
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "clamp(0.875rem, 2vw, 1.125rem)",
-                  color: "var(--green-bright)",
-                }}
-              >
-                {displayedRole}
-                <span className="cursor-blink" style={{ marginLeft: "2px" }}>▋</span>
-              </span>
-            </motion.div>
+      <motion.p
+        style={{
+          fontFamily: "var(--font-sans)",
+          fontSize: "18px",
+          color: "var(--text-muted)",
+          lineHeight: 1.6,
+          maxWidth: "480px",
+          marginBottom: "16px",
+          y: subtitleY,
+        }}
+        {...blurFade}
+        transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      >
+        Software engineer building thoughtful systems at the intersection of UX and engineering.
+      </motion.p>
 
-            {/* CTA buttons */}
-            <motion.div
-              variants={fadeIn}
-              style={{ display: "flex", gap: "1.5rem", justifyContent: "center", flexWrap: "wrap" }}
-            >
-              <a
-                href="#projects"
-                className="pixel-border"
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "0.875rem",
-                  color: "var(--green-primary)",
-                  padding: "0.75rem 1.5rem",
-                  background: "transparent",
-                  textDecoration: "none",
-                  display: "inline-block",
-                  transition: "color 0.2s, background 0.2s",
-                }}
-              >
-                View Work
-              </a>
-              <a
-                href="/resume.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "0.875rem",
-                  color: "var(--gray-400)",
-                  padding: "0.75rem 1.5rem",
-                  border: "1px solid var(--gray-700, #3a3a3c)",
-                  textDecoration: "none",
-                  display: "inline-block",
-                }}
-              >
-                Resume ↗
-              </a>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.p
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: "13px",
+          color: "var(--text-faint)",
+          marginBottom: "48px",
+        }}
+        {...blurFade}
+        transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
+        MS CS @ CU Boulder · Boulder, CO
+      </motion.p>
 
-      {/* Scroll indicator */}
-      {loadingComplete && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          style={{
-            position: "absolute",
-            bottom: "2rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "4px",
-          }}
-        >
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", color: "var(--gray-400)", letterSpacing: "0.1em" }}>
-            SCROLL
-          </span>
-          <motion.div
-            animate={{ y: [0, 6, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            style={{ color: "var(--green-primary)", fontSize: "1rem" }}
-          >
-            ↓
-          </motion.div>
-        </motion.div>
-      )}
+      <motion.div
+        animate={{ y: [0, 8, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        style={{ color: "var(--text-faint)", fontSize: "20px" }}
+      >
+        ↓
+      </motion.div>
     </section>
-  );
+  )
 }
