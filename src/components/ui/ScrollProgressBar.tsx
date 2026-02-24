@@ -20,7 +20,7 @@ export function ScrollProgressBar() {
       <motion.div
         style={{
           height: "100%",
-          background: "var(--accent)",
+          background: "var(--text-faint)",
           width,
           transformOrigin: "left",
         }}

@@ -1,108 +1,98 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
+"use client"
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "motion/react"
+import { ThemeToggle } from "@/components/ui/ThemeToggle"
+import Link from "next/link"
 
 export function NavBar() {
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 80);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    const onScroll = () => setScrolled(window.scrollY > 80)
+    window.addEventListener("scroll", onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
 
   const navLinks = [
-    { label: "About", href: "#about" },
-    { label: "Work", href: "#experience" },
+    { label: "About", href: "/about" },
+    { label: "Work", href: "/work" },
     { label: "Contact", href: "mailto:sudhanva.m@icloud.com" },
-  ];
-
-  if (!scrolled) {
-    return (
-      <nav
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          padding: "20px 32px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          zIndex: 1000,
-          transition: "all 400ms cubic-bezier(0.22, 1, 0.36, 1)",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "15px",
-            color: "var(--text)",
-          }}
-        >
-          Sudhanva Manjunath
-        </span>
-        <div
-          style={{ display: "flex", alignItems: "center", gap: "28px" }}
-        >
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="nav-link"
-            >
-              {link.label}
-            </a>
-          ))}
-          <ThemeToggle />
-        </div>
-      </nav>
-    );
-  }
+  ]
 
   return (
-    <nav
+    // Fixed full-width anchor — transparent, pointer-events:none so it doesn't block page clicks
+    <div
       style={{
         position: "fixed",
-        top: "16px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        padding: "10px 20px",
-        display: "flex",
-        alignItems: "center",
-        gap: "20px",
+        top: 0,
+        left: 0,
+        right: 0,
         zIndex: 1000,
-        borderRadius: "9999px",
-        background: "rgba(13,12,11,0.88)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        border: "1px solid var(--border)",
-        transition: "all 400ms cubic-bezier(0.22, 1, 0.36, 1)",
-        whiteSpace: "nowrap",
+        display: "flex",
+        justifyContent: scrolled ? "center" : "flex-end",
+        padding: scrolled ? "0" : "20px 32px",
+        pointerEvents: "none",
       }}
     >
-      <span
+      <motion.nav
+        layout
+        transition={{
+          layout: { type: "spring", stiffness: 260, damping: 28, mass: 0.9 },
+        }}
         style={{
-          fontFamily: "var(--font-sans)",
-          fontSize: "14px",
-          fontWeight: 600,
-          color: "var(--accent)",
-          marginRight: "8px",
+          pointerEvents: "auto",
+          marginTop: scrolled ? "16px" : "0",
+          padding: scrolled ? "10px 20px" : "0",
+          borderRadius: scrolled ? "9999px" : "0px",
+          background: scrolled ? `rgba(var(--bg-rgb), 0.92)` : "transparent",
+          backdropFilter: scrolled ? "blur(12px)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
+          border: scrolled ? "1px solid var(--border)" : "1px solid transparent",
+          display: "flex",
+          alignItems: "center",
+          gap: "20px",
+          whiteSpace: "nowrap",
         }}
       >
-        SM
-      </span>
-      {navLinks.map((link) => (
-        <a
-          key={link.label}
-          href={link.href}
-          className="nav-link"
-        >
-          {link.label}
-        </a>
-      ))}
-      <ThemeToggle />
-    </nav>
-  );
+        {/* SM — fades in when pill is active. Same element, not a swap. */}
+        <AnimatePresence>
+          {scrolled && (
+            <motion.span
+              key="sm-label"
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "var(--text)",
+                overflow: "hidden",
+                display: "inline-block",
+                paddingRight: "4px",
+              }}
+            >
+              SM
+            </motion.span>
+          )}
+        </AnimatePresence>
+
+        {/* Nav links — always present */}
+        {navLinks.map((link) => (
+          <Link
+            key={link.label}
+            href={link.href}
+            className="nav-link"
+            style={{ fontSize: "13px" }}
+          >
+            {link.label}
+          </Link>
+        ))}
+
+        <ThemeToggle />
+      </motion.nav>
+    </div>
+  )
 }
