@@ -1,130 +1,160 @@
-"use client";
+"use client"
+import { useEffect, useState } from "react"
+import { motion } from "motion/react"
 
-import { useEffect, useState } from "react";
-import { motion } from "motion/react";
+const TARGET = "sudhanva manjunath"
+const CHARS = "abcdefghijklmnopqrstuvwxyz0123456789!@#$%&"
+const GRID_FONT_SIZE = 18  // px
+const GRID_LINE_HEIGHT = 1.4
+const NAME_FONT_SIZE = 36  // px — must match Hero.tsx h1 fontSize
 
 interface LoadingScreenProps {
-  onComplete: () => void;
+  onComplete: () => void
 }
 
-const CHARS =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&";
-const TARGET = "sudhanva manjunath";
+function randomChar() {
+  return CHARS[Math.floor(Math.random() * CHARS.length)]
+}
+
+function makeGrid() {
+  const charW = GRID_FONT_SIZE * 0.55
+  const charH = GRID_FONT_SIZE * GRID_LINE_HEIGHT
+  const cols = Math.ceil(window.innerWidth / charW) + 2
+  const rows = Math.ceil(window.innerHeight / charH) + 2
+  return Array.from({ length: cols * rows }, randomChar).join("")
+}
 
 export function LoadingScreen({ onComplete }: LoadingScreenProps) {
-  const [display, setDisplay] = useState(
-    TARGET.split("").map(() => " ")
-  );
-  const [lockedCount, setLockedCount] = useState(0);
-  const [phase, setPhase] = useState<"scramble" | "lock" | "hold" | "fade">(
-    "scramble"
-  );
-  const [visible, setVisible] = useState(true);
+  const [bgChars, setBgChars] = useState<string>("")
+  const [nameDisplay, setNameDisplay] = useState<string[]>(
+    TARGET.split("").map(() => randomChar())
+  )
+  const [lockedCount, setLockedCount] = useState(0)
+  const [bgOpacity, setBgOpacity] = useState(1)
+  const [done, setDone] = useState(false)
+  const [phase, setPhase] = useState<"scramble" | "lock" | "fadeOut" | "complete">("scramble")
 
-  // Check for reduced motion
-  const prefersReducedMotion =
-    typeof window !== "undefined"
-      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      : false;
-
+  // Initialize full-screen character grid
   useEffect(() => {
-    if (prefersReducedMotion) {
-      onComplete();
-      return;
+    const prefersReduced =
+      typeof window !== "undefined"
+        ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        : false
+
+    if (prefersReduced) {
+      onComplete()
+      return
     }
 
-    // Phase 1: Scramble all positions
-    const scrambleInterval = setInterval(() => {
-      setDisplay(
-        TARGET.split("").map((char) =>
-          char === " " ? " " : CHARS[Math.floor(Math.random() * CHARS.length)]
-        )
-      );
-    }, 40);
+    setBgChars(makeGrid())
 
-    // Phase 2: Start locking in after 300ms
-    const lockStart = setTimeout(() => {
-      clearInterval(scrambleInterval);
-      setPhase("lock");
-    }, 300);
+    // Scramble bg chars continuously
+    const bgInterval = setInterval(() => setBgChars(makeGrid()), 50)
+
+    // Begin locking name after 500ms
+    const lockTimeout = setTimeout(() => {
+      clearInterval(bgInterval)
+      setPhase("lock")
+    }, 500)
 
     return () => {
-      clearInterval(scrambleInterval);
-      clearTimeout(lockStart);
-    };
-  }, []);
+      clearInterval(bgInterval)
+      clearTimeout(lockTimeout)
+    }
+  }, [])
 
+  // Keep bg scrambling during lock phase
   useEffect(() => {
-    if (phase !== "lock") return;
+    if (phase !== "lock") return
+
+    const interval = setInterval(() => setBgChars(makeGrid()), 50)
+    return () => clearInterval(interval)
+  }, [phase])
+
+  // Lock name chars one by one
+  useEffect(() => {
+    if (phase !== "lock") return
 
     if (lockedCount >= TARGET.length) {
-      setPhase("hold");
-      // Phase 3 → 4: fade after hold
+      // Name complete — fade out background
+      setPhase("fadeOut")
+      setBgOpacity(0)
       setTimeout(() => {
-        setPhase("fade");
-        setTimeout(() => {
-          setVisible(false);
-          onComplete();
-        }, 300);
-      }, 300);
-      return;
+        setDone(true)
+        onComplete()
+      }, 700)
+      return
     }
 
-    const lockTimer = setTimeout(() => {
-      setDisplay((prev) => {
-        const next = [...prev];
-        next[lockedCount] = TARGET[lockedCount];
-        return next;
-      });
-      setLockedCount((prev) => prev + 1);
-    }, 80);
+    const timer = setTimeout(() => {
+      setNameDisplay(prev => {
+        const next = [...prev]
+        next[lockedCount] = TARGET[lockedCount]
+        return next
+      })
+      setLockedCount(c => c + 1)
+    }, 75)
 
-    return () => clearTimeout(lockTimer);
-  }, [phase, lockedCount]);
+    return () => clearTimeout(timer)
+  }, [phase, lockedCount])
 
-  // Keep scrambling unlocked chars during lock phase
-  useEffect(() => {
-    if (phase !== "lock") return;
-    const interval = setInterval(() => {
-      setDisplay((prev) =>
-        prev.map((char, i) => {
-          if (i < lockedCount) return TARGET[i];
-          if (TARGET[i] === " ") return " ";
-          return CHARS[Math.floor(Math.random() * CHARS.length)];
-        })
-      );
-    }, 40);
-    return () => clearInterval(interval);
-  }, [phase, lockedCount]);
-
-  if (!visible) return null;
+  if (done) return null
 
   return (
-    <motion.div
-      initial={{ opacity: 1 }}
-      animate={{ opacity: phase === "fade" ? 0 : 1 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+    <div
+      role="status"
+      aria-label="Loading"
       style={{
         position: "fixed",
         inset: 0,
-        background: "#0d0c0b",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        background: "#fafaf8",
         zIndex: 9999,
+        overflow: "hidden",
       }}
     >
-      <span
+      {/* Full-screen scrambling background */}
+      <motion.div
+        animate={{ opacity: bgOpacity }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        aria-hidden="true"
         style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: "clamp(28px, 5vw, 60px)",
-          color: "#f0ede8",
-          letterSpacing: "0.02em",
-          fontVariantNumeric: "tabular-nums",
+          position: "absolute",
+          inset: 0,
+          fontFamily: "var(--font-mono)",
+          fontSize: `${GRID_FONT_SIZE}px`,
+          lineHeight: GRID_LINE_HEIGHT,
+          color: "#b8b0a8",
+          userSelect: "none",
+          pointerEvents: "none",
+          overflowWrap: "break-word",
+          wordBreak: "break-all",
         }}
       >
-        {display.join("")}
-      </span>
-    </motion.div>
-  );
+        {bgChars}
+      </motion.div>
+
+      {/* Name overlay — positioned to match hero h1 exactly */}
+      <div
+        aria-live="polite"
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "max(40px, calc((100vw - 900px) / 2 + 40px))",
+          transform: "translateY(-50%)",
+          fontFamily: "var(--font-serif)",
+          fontSize: `${NAME_FONT_SIZE}px`,
+          fontWeight: 400,
+          color: "#0d0c0b",
+          letterSpacing: "0.01em",
+          userSelect: "none",
+          pointerEvents: "none",
+          zIndex: 1,
+          whiteSpace: "nowrap",
+          lineHeight: 1.1,
+        }}
+      >
+        {nameDisplay.join("")}
+      </div>
+    </div>
+  )
 }
