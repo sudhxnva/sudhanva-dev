@@ -1,18 +1,15 @@
 "use client"
-
 import { useRef } from "react"
 import { motion, useScroll, useTransform } from "motion/react"
+
+// Must match LoadingScreen.tsx NAME_FONT_SIZE
+const NAME_FONT_SIZE = 36 // px
 
 export function Hero() {
   const containerRef = useRef<HTMLElement>(null)
   const { scrollY } = useScroll()
-  const nameY = useTransform(scrollY, [0, 400], [0, -40])
-  const subtitleY = useTransform(scrollY, [0, 400], [0, -20])
-
-  const blurFade = {
-    initial: { opacity: 0, filter: "blur(8px)", y: 20 },
-    animate: { opacity: 1, filter: "blur(0px)", y: 0 },
-  }
+  const nameY = useTransform(scrollY, [0, 400], [0, -30])
+  const subtitleY = useTransform(scrollY, [0, 400], [0, -15])
 
   return (
     <section
@@ -30,55 +27,66 @@ export function Hero() {
         width: "100%",
       }}
     >
+      {/* "Hello, I'm" — animates AFTER name */}
+      <motion.p
+        style={{
+          fontFamily: "var(--font-sans)",
+          fontSize: "13px",
+          color: "var(--text-muted)",
+          marginBottom: "10px",
+          letterSpacing: "0.02em",
+        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        Hello, I&apos;m
+      </motion.p>
+
+      {/*
+        Name — layoutId="hero-name" creates a shared element transition with the
+        LoadingScreen's name element. When the loading screen unmounts, Framer Motion
+        records its position and springs this h1 from there to its actual position.
+        No explicit initial/animate needed — layoutId handles the entrance.
+      */}
       <motion.h1
+        layoutId="hero-name"
         style={{
           fontFamily: "var(--font-serif)",
-          fontSize: "clamp(40px, 8vw, 88px)",
+          fontSize: `${NAME_FONT_SIZE}px`,
           color: "var(--text)",
           lineHeight: 1.1,
-          marginBottom: "24px",
+          marginBottom: "20px",
           fontWeight: 400,
           y: nameY,
         }}
-        {...blurFade}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       >
         Sudhanva Manjunath
       </motion.h1>
 
+      {/* Subtitle — serif as user requested */}
       <motion.p
         style={{
-          fontFamily: "var(--font-sans)",
+          fontFamily: "var(--font-serif)",
           fontSize: "18px",
           color: "var(--text-muted)",
-          lineHeight: 1.6,
-          maxWidth: "480px",
-          marginBottom: "16px",
+          lineHeight: 1.65,
+          maxWidth: "420px",
+          marginBottom: "48px",
           y: subtitleY,
         }}
-        {...blurFade}
-        transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        Software engineer building thoughtful systems at the intersection of UX and engineering.
+        an engineer who bridges UX and engineering.
       </motion.p>
 
-      <motion.p
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "13px",
-          color: "var(--text-faint)",
-          marginBottom: "48px",
-        }}
-        {...blurFade}
-        transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        MS CS @ CU Boulder · Boulder, CO
-      </motion.p>
-
+      {/* Bouncing arrow */}
       <motion.div
         animate={{ y: [0, 8, 0] }}
         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        style={{ color: "var(--text-faint)", fontSize: "20px" }}
+        style={{ color: "var(--text-faint)", fontSize: "18px" }}
       >
         ↓
       </motion.div>
